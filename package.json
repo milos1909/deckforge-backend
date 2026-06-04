@@ -1,0 +1,38 @@
+{
+  "name": "deckforge-backend",
+  "module": "./src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch ./src/index.ts",
+    "import:cards": "bun scripts/import-cards.ts",
+    "import:sets": "bun scripts/import-sets.ts",
+    "import:card-sets": "bun scripts/import-card-sets.ts",
+    "download:images:cards": "bun scripts/download-card-images.ts",
+    "download:images:sets": "bun scripts/download-set-images.ts"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/bun": "latest",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/nodemailer": "^8.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "axios": "^1.16.1",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "mysql2": "^3.22.3",
+    "nodemailer": "^8.0.8",
+    "typeorm": "^0.3.29"
+  }
+}
