@@ -8,7 +8,7 @@ const client = axios.create({
     baseURL: 'https://db.ygoprodeck.com/api/v7',
     headers: {
         'Accept': 'application/json',
-        'X-Name': 'YUGIOH_SHOP'
+        'X-Name': 'DECKFORGE'
     },
     validateStatus: (status) => {
         return status === 200
@@ -19,17 +19,20 @@ const cardRepo = AppDataSource.getRepository(Card)
 const cardSetRepo = AppDataSource.getRepository(CardSet)
 
 export class CardService {
-    static async getCards(name: string, offset: number){
-            const [cards, total] = await cardRepo.findAndCount({
-                where: name ? {
-                    name: Like(`%${name}%`)
-                } : {},
-                take: 24,
-                skip: offset
-            })
-    
-            return {cards, total}
-        }
+    static async getCards(name: string, limit: number, offset: number) {
+        const [cards, total] = await cardRepo.findAndCount({
+            where: name
+                ? [
+                    { name: Like(`%${name}%`) },
+                    { description: Like(`%${name}%`) }
+                ]
+                : {},
+            take: limit,
+            skip: offset
+        })
+
+        return { cards, total }
+    }
 
     static async getCardsBySet(set_name: string) {
         const rows = await cardSetRepo.find({

@@ -7,9 +7,10 @@ export const CardRoute = Router()
 CardRoute.get('/', async (req, res) => {
     await defineRequest(res, async () => {
         const name = String(req.query.name)
+        const limit = Number(req.query.limit)
         const offset = Number(req.query.offset) || 0
 
-        return await CardService.getCards(name, offset)
+        return await CardService.getCards(name, limit, offset)
     })
 })
 

@@ -6,6 +6,8 @@ import { Invoice } from "./entities/Invoice";
 import { InvoiceItem } from "./entities/InvoiceItem";
 import { Card } from "./entities/Card";
 import { CardSet } from "./entities/CardSet";
+import { Deck } from "./entities/Deck";
+import { DeckCard } from "./entities/DeckCard";
 
 configDotenv()
 
@@ -16,5 +18,5 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [Card, Set, CardSet, User, Invoice, InvoiceItem]
+    entities: [Card, Set, CardSet, User, Invoice, InvoiceItem, Deck, DeckCard]
 })

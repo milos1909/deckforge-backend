@@ -8,6 +8,7 @@ import { configDotenv } from "dotenv"
 import { UserRoute } from "./routes/user.route"
 import { UserService } from "./services/user.service"
 import { InvoiceRoute } from "./routes/invoice.route"
+import { DeckRoute } from "./routes/deck.route"
 
 const app = express()
 
@@ -22,6 +23,7 @@ app.use('/api/set', SetRoute)
 app.use('/api/card', CardRoute)
 app.use('/api/user', UserRoute)
 app.use('/api/invoice', InvoiceRoute)
+app.use('/api/deck', DeckRoute)
 
 configDotenv()
 
