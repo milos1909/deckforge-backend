@@ -6,7 +6,7 @@ const deckRepo = AppDataSource.getRepository(Deck);
 const deckCardRepo = AppDataSource.getRepository(DeckCard);
 
 type DeckCardInput = {
-  cardId: number;
+  id: number;
   type: "main" | "extra" | "side";
 };
 
@@ -16,9 +16,10 @@ type DeckInput = {
 };
 
 export class DeckService {
-  static async create(userId: number, obj: DeckInput) {
+  static async create(obj: DeckInput, userId: number) {
     return await AppDataSource.transaction(async (manager) => {
       const deck = new Deck();
+      
       deck.name = obj.name;
       deck.userId = userId;
 
@@ -27,7 +28,7 @@ export class DeckService {
       const deckCards = obj.cards.map((card) => {
         const deckCard = new DeckCard();
         deckCard.deckId = savedDeck.id;
-        deckCard.cardId = card.cardId;
+        deckCard.cardId = card.id;
         deckCard.type = card.type;
 
         return deckCard;
@@ -39,9 +40,12 @@ export class DeckService {
     });
   }
 
-  static async update(id: number, obj: DeckInput) {
+  static async update(id: number, userId: number, obj: DeckInput) {
     return await AppDataSource.transaction(async (manager) => {
-      const deck = await manager.findOneBy(Deck, { id });
+      const deck = await manager.findOneBy(Deck, { 
+        id,
+        userId
+      });
 
       if (deck == null) {
         throw new Error("NOT_FOUND");
@@ -57,7 +61,7 @@ export class DeckService {
       const deckCards = obj.cards.map((card) => {
         const deckCard = new DeckCard();
         deckCard.deckId = id;
-        deckCard.cardId = card.cardId;
+        deckCard.cardId = card.id;
         deckCard.type = card.type;
 
         return deckCard;

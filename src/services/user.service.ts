@@ -52,8 +52,8 @@ export class UserService {
         if(!bcrypt.compareSync(obj.password, user.password)) throw new Error('USER_NOT_FOUND')
 
         return {
-            access: jwt.sign({username: user.username}, JWT_SECRET, { expiresIn:  '60s' }),
-            refresh: jwt.sign({username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
+            access: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
+            refresh: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
             username: user.username
         }
     }
@@ -63,7 +63,7 @@ export class UserService {
         const user = await this.getUserByUsername(decoded.username)
 
         return {
-            access: jwt.sign({username: user.username}, JWT_SECRET, {expiresIn: '60s'}),
+            access: jwt.sign({username: user.username}, JWT_SECRET, {expiresIn: '7d'}),
             refresh: token,
             username: user.username
         }

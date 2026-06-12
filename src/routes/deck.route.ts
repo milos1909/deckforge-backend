@@ -6,15 +6,21 @@ export const DeckRoute = Router()
 
 DeckRoute.post('/create', async (req: any, res) => {
     await defineRequest(res, async () => {
-        const userId = req.user.id
+        console.log("BODY:", req.body);
 
-        await DeckService.create(userId, req.body)
+        const userId = req.user.id
+        console.log(req.user)
+        return await DeckService.create(req.body, userId)
     })
 })
 
-DeckRoute.put('/update/:id', async (req, res) => {
+DeckRoute.put('/update/:id', async (req: any, res) => {
     await defineRequest(res, async () => {
+        console.log("BODY:", req.body);
+
         const id = Number(req.params.id)
-        await DeckService.update(id, req.body)
+        const userId = req.user.id
+
+        await DeckService.update(id, userId, req.body)
     })
 })
