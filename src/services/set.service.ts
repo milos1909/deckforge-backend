@@ -1,4 +1,4 @@
-import { Like } from "typeorm"
+import { LessThanOrEqual, Like } from "typeorm"
 import { AppDataSource } from "../db"
 import { Set } from "../entities/Set"
 import { CardService } from "./card.service"
@@ -6,15 +6,16 @@ import { CardService } from "./card.service"
 const repo = AppDataSource.getRepository(Set)
 
 export class SetService {
-    static async getSets(name: string, offset: number){
+    static async getSets(name: string, sortDirection: "DESC" | "ASC", maxPrice: number, limit: number, offset: number){
         const [sets, total] = await repo.findAndCount({
-            where: name ? {
-                set_name: Like(`%${name}%`)
-            } : {},
-            order: {
-                tcg_date: 'DESC'
+            where: {
+                ...({ set_name: Like(`%${name}%`) }),
+                ...({ set_price: LessThanOrEqual(maxPrice.toString())}),
             },
-            take: 18,
+            order: {
+                tcg_date: sortDirection
+            },
+            take: limit,
             skip: offset
         })
 
@@ -36,7 +37,7 @@ export class SetService {
         
         return {
             set_details: data,
-            cards: rsp
+            rarity_groups: rsp
         }
     }
 }
