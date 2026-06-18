@@ -26,7 +26,6 @@ const RARITY_ORDER = [
     "Ultimate Rare",
     "Ultra Rare (Pharaoh's Rare)",
     "10000 Secret Rare",
-
     "Prismatic Secret Rare",
     "Extra Secret Rare",
     "Platinum Secret Rare",
@@ -35,32 +34,25 @@ const RARITY_ORDER = [
     "Ghost/Gold Rare",
     "Grand Master Rare",
     "Ultra Secret Rare",
-
     "Platinum Rare",
     "Premium Gold Rare",
     "Gold Rare",
     "Mosaic Rare",
-
     "Ultra Parallel Rare",
     "Ultra Rare",
-
     "Super Parallel Rare",
     "Super Rare",
-
     "Duel Terminal Ultra Parallel Rare",
     "Duel Terminal Super Parallel Rare",
     "Duel Terminal Rare Parallel Rare",
     "Duel Terminal Normal Rare Parallel Rare",
     "Duel Terminal Normal Parallel Rare",
-
     "Starfoil Rare",
     "Shatterfoil Rare",
     "Starfoil",
-
     "Rare",
     "Normal Parallel Rare",
     "Common",
-
     "Super Short Print",
     "Short Print",
     "New artwork",
@@ -82,26 +74,50 @@ function rarityRank(rarity: string) {
 }
 
 export class CardService {
-    static async getCards(name: string, limit: number, offset: number) {
-        const [cards, total] = await cardRepo.findAndCount({
-            where: name
-                ? [
-                    { name: Like(`%${name}%`) },
-                    { description: Like(`%${name}%`) }
-                ]
-                : {},
-            take: limit,
-            skip: offset
-        })
+    static async getCards(
+        name: string, 
+        limit: number, 
+        offset: number, 
+        type?: string, 
+        archetype?: string, 
+        race?: string, 
+        attribute?: string,
+        level?: number, 
+        scale?: number, 
+        linkval?: number, 
+        sortBy?: "atk" | "def", 
+        sortDirection?: "DESC" | "ASC"
+    ) {
+        const query = cardRepo.createQueryBuilder("card").where(
+            "(card.name LIKE :name OR card.description LIKE :name)",
+            { name: `%${name}%` }
+        )
+
+        if (type) query.andWhere("card.type = :type", { type })
+        if (archetype) query.andWhere("card.archetype = :archetype", { archetype })
+        if (race) query.andWhere("card.race = :race", { race })
+        if (attribute) query.andWhere("card.attribute = :attribute", { attribute })
+        if (level !== undefined) query.andWhere("card.level = :level", { level })
+        if (scale !== undefined) query.andWhere("card.scale = :scale", { scale })
+        if (linkval !== undefined) query.andWhere("card.linkval = :linkval", { linkval })
+        if (sortBy) {
+            query.orderBy(`card.${sortBy} IS NULL`, "ASC")
+            query.addOrderBy(`card.${sortBy}`, sortDirection ?? "DESC") 
+            query.addOrderBy("card.id", "ASC")
+        }
+        
+        query.take(limit).skip(offset)
+
+        const [cards, total] = await query.getManyAndCount()
 
         return { cards, total }
     }
 
-    static async getCardsBySet(set_name: string) {
+    static async getCardsBySet(setName: string) {
         const rows = await cardSetRepo.find({
             where: {
                 set: {
-                    set_name
+                    setName
                 }
             },
             relations: {
@@ -157,5 +173,54 @@ export class CardService {
         }
 
         return data
+    }
+
+    static async getCardTypes() {
+        const rows = await cardRepo
+            .createQueryBuilder("card")
+            .select("DISTINCT card.type", "type")
+            .where("card.type IS NOT NULL")
+            .andWhere("TRIM(card.type) != ''")
+            .orderBy("card.type", "ASC")
+            .getRawMany();
+
+        return rows.map(row => row.type);
+    }
+
+    static async getCardArchetypes() {
+        const rows = await cardRepo
+            .createQueryBuilder("card")
+            .select("DISTINCT card.archetype", "archetype")
+            .where("card.archetype IS NOT NULL")
+            .andWhere("TRIM(card.archetype) != ''")
+            .orderBy("card.archetype", "ASC")
+            .getRawMany();
+
+        return rows.map(row => row.archetype);
+    }
+
+    static async getCardRaces(type: string) {
+        const rows = await cardRepo
+            .createQueryBuilder("card")
+            .select("DISTINCT card.race", "race")
+            .where("card.type = :type", { type })
+            .andWhere("card.race IS NOT NULL")
+            .andWhere("TRIM(card.race) != ''")
+            .orderBy("card.race", "ASC")
+            .getRawMany();
+
+        return rows.map(row => row.race);
+    }
+
+    static async getCardAttributes() {
+        const rows = await cardRepo
+            .createQueryBuilder("card")
+            .select("DISTINCT card.attribute", "attribute")
+            .where("card.attribute IS NOT NULL")
+            .andWhere("TRIM(card.attribute) != ''")
+            .orderBy("card.attribute", "ASC")
+            .getRawMany();
+
+        return rows.map(row => row.attribute);
     }
 }

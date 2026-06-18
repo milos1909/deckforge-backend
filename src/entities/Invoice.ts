@@ -39,7 +39,7 @@ export class Invoice {
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "user_id", referencedColumnName: "id" }])
-  user: User;
+  user: Relation<User>;
 
   @OneToMany(() => InvoiceItem, (invoiceItem) => invoiceItem.invoice)
   invoiceItems: InvoiceItem[];

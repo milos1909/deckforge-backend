@@ -127,6 +127,15 @@ export class UserService {
                 id: true,
                 username: true,
                 email: true,
+                decks: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    coverCardId: true,
+                    isPublic: true,
+                    createdAt: true,
+                    updatedAt: true
+                },
                 invoices: {
                     id: true,
                     pursId: true,
@@ -143,6 +152,7 @@ export class UserService {
                 deletedAt: IsNull()
             },
             relations: {
+                decks: true,
                 invoices: {
                     invoiceItems: true
                 }

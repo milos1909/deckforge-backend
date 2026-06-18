@@ -6,7 +6,7 @@ await AppDataSource.initialize()
 
 try {
     const rsp = await axios.get(
-        "https://db.ygoprodeck.com/api/v7/cardinfo.php" 
+        "https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes" 
     )
 
     const repo = AppDataSource.getRepository(Card)
@@ -24,7 +24,10 @@ try {
         race: card.race,
         attribute: card.attribute ?? null,
         archetype: card.archetype ?? null,
-        linkval: card.linkval ?? null
+        scale: card.scale ?? null,
+        linkval: card.linkval ?? null,
+        tcgDate: card.misc_info[0].tcg_date ?? null,
+        cardmarket_price: card.card_prices[0].cardmarket_price ?? null
     }))
 
     const BATCH_SIZE = 500

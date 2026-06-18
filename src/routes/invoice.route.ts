@@ -25,11 +25,11 @@ InvoiceRoute.put('/pay', async (req: any, res) => {
     })   
 })
 
-InvoiceRoute.put('/cart/add/:set_name', async (req: any, res) => {
+InvoiceRoute.put('/cart/add/:setName', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
-        const set_name = req.params.set_name
-        return await InvoiceService.addItemToCart(set_name, username)
+        const setName = req.params.setName
+        return await InvoiceService.addItemToCart(setName, username)
     })   
 })
 

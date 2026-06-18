@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Card } from "./Card"
-import { Set } from "./Set"
+import { Card } from "./Card";
+import { Set } from "./Set";
 
 @Index("uq_card_set", ["cardId", "setId", "setRarity"], { unique: true })
 @Index("fk_card_set_set_id", ["setId"], {})
@@ -40,5 +40,5 @@ export class CardSet {
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "set_id", referencedColumnName: "id" }])
-  set: Set;
+  set: Relation<Set>;
 }

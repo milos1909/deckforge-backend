@@ -5,7 +5,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  type Relation,
 } from "typeorm";
 import { Invoice } from "./Invoice";
 import { Set } from "./Set";
@@ -46,7 +45,7 @@ export class InvoiceItem {
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "invoice_id", referencedColumnName: "id" }])
-  invoice: Invoice;
+  invoice: Relation<Invoice>;
 
   @ManyToOne(() => Set, (set) => set.invoiceItems, {
     onDelete: "RESTRICT",

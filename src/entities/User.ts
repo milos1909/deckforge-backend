@@ -5,6 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { Deck } from "./Deck";
 import { Invoice } from "./Invoice";
 
 @Index("uq_user_email", ["email"], { unique: true })
@@ -37,6 +38,9 @@ export class User {
 
   @Column("datetime", { name: "deleted_at", nullable: true })
   deletedAt: Date | null;
+
+  @OneToMany(() => Deck, (deck) => deck.user)
+  decks: Deck[];
 
   @OneToMany(() => Invoice, (invoice) => invoice.user)
   invoices: Invoice[];

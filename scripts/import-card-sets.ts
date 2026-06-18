@@ -46,7 +46,7 @@ try {
         }
     }
 
-    const BATCH_SIZE = 500
+    const BATCH_SIZE = 1
 
     for (let i = 0; i < entities.length; i += BATCH_SIZE) {
         const batch = entities.slice(i, i + BATCH_SIZE)

@@ -22,7 +22,7 @@ export class DeckCard {
   @Column("int", { name: "card_id", unsigned: true })
   cardId: number;
 
-  @Column("enum", {name: "type", enum: ["main", "extra", "side"]})
+  @Column("enum", { name: "type", enum: ["main", "extra", "side"] })
   type: "main" | "extra" | "side";
 
   @ManyToOne(() => Card, (card) => card.deckCards, {
@@ -30,7 +30,7 @@ export class DeckCard {
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "card_id", referencedColumnName: "id" }])
-  card: Card;
+  card: Relation<Card>;
 
   @ManyToOne(() => Deck, (deck) => deck.deckCards, {
     onDelete: "RESTRICT",

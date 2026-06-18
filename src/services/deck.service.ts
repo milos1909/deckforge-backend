@@ -11,8 +11,8 @@ type DeckCardInput = {
 };
 
 type DeckInput = {
-  name: string;
-  cards: DeckCardInput[];
+  name: string
+  cards: DeckCardInput[]
 };
 
 export class DeckService {

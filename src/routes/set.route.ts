@@ -16,9 +16,9 @@ SetRoute.get('/', async (req, res) => {
     })
 })
 
-SetRoute.get('/:set_name', async (req, res) => {
+SetRoute.get('/:setName', async (req, res) => {
     await defineRequest(res, async () => {
-        const set_name = String(req.params.set_name)
-        return await SetService.getSetByName(set_name)
+        const setName = String(req.params.setName)
+        return await SetService.getSetByName(setName)
     })
 })

@@ -11,9 +11,9 @@ const invoiceItemRepo = AppDataSource.getRepository(InvoiceItem)
 const setRepo = AppDataSource.getRepository(Set)
 
 export class InvoiceService {
-    static async addItemToCart(set_name: string, username: string) {
+    static async addItemToCart(setName: string, username: string) {
         const set = await setRepo.findOneByOrFail({
-            set_name
+            setName
         })
 
         const unpaidInvoice = await this.getUnpaidInvoice(username)
@@ -28,7 +28,7 @@ export class InvoiceService {
             await invoiceItemRepo.save({
                 invoiceId: unpaidInvoice.id,
                 setId: set.id,
-                pricePerItem: Number(set.set_price),
+                pricePerItem: Number(set.price),
                 count: 1,
                 createdAt: new Date()
             })

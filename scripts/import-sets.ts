@@ -14,10 +14,10 @@ try {
   const cardSets = rsp.data;
 
   const entities = cardSets.map((set: any) => ({
-    set_code: set.set_code,
-    set_name: set.set_name,
-    num_of_cards: set.num_of_cards,
-    tcg_date: set.tcg_date || null
+    setCode: set.set_code,
+    setName: set.set_name,
+    numOfCards: set.num_of_cards,
+    tcgDate: set.tcg_date || null
   }))
 
   const BATCH_SIZE = 500

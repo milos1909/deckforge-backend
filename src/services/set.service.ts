@@ -9,11 +9,11 @@ export class SetService {
     static async getSets(name: string, sortDirection: "DESC" | "ASC", maxPrice: number, limit: number, offset: number){
         const [sets, total] = await repo.findAndCount({
             where: {
-                ...({ set_name: Like(`%${name}%`) }),
-                ...({ set_price: LessThanOrEqual(maxPrice.toString())}),
+                ...({ setName: Like(`%${name}%`) }),
+                ...({ price: LessThanOrEqual(maxPrice.toString())}),
             },
             order: {
-                tcg_date: sortDirection
+                tcgDate: sortDirection
             },
             take: limit,
             skip: offset
@@ -22,10 +22,10 @@ export class SetService {
         return {sets, total}
     }
 
-    static async getSetByName(set_name: string){
+    static async getSetByName(setName: string){
         const data = await repo.findOne({
             where: {
-                set_name
+                setName
             }
         })
 
@@ -33,7 +33,7 @@ export class SetService {
             throw new Error('NOT_FOUND')
         }
 
-        const rsp = await CardService.getCardsBySet(String(set_name))
+        const rsp = await CardService.getCardsBySet(String(setName))
         
         return {
             set_details: data,

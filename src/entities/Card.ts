@@ -1,4 +1,7 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, OneToMany } from "typeorm";
+import { CardSet } from "./CardSet";
+import { Deck } from "./Deck";
+import { DeckCard } from "./DeckCard";
 
 @Entity("card", { schema: "yugioh_shop" })
 export class Card {
@@ -32,6 +35,29 @@ export class Card {
   @Column("varchar", { name: "archetype", nullable: true, length: 100 })
   archetype: string | null;
 
+  @Column("int", { name: "scale", nullable: true })
+  scale: number | null;
+
   @Column("int", { name: "linkval", nullable: true })
   linkval: number | null;
+
+  @Column("date", { name: "tcg_date", nullable: true })
+  tcgDate: string | null;
+
+  @Column("decimal", {
+    name: "cardmarket_price",
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  cardmarketPrice: string | null;
+
+  @OneToMany(() => CardSet, (cardSet) => cardSet.card)
+  cardSets: CardSet[];
+
+  @OneToMany(() => Deck, (deck) => deck.coverCard)
+  decks: Deck[];
+
+  @OneToMany(() => DeckCard, (deckCard) => deckCard.card)
+  deckCards: DeckCard[];
 }
