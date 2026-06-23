@@ -11,7 +11,7 @@ import { Set } from "./Set";
 
 @Index("uq_card_set", ["cardId", "setId", "setRarity"], { unique: true })
 @Index("fk_card_set_set_id", ["setId"], {})
-@Entity("card_set", { schema: "yugioh_shop" })
+@Entity("card_set", { schema: "deckforge" })
 export class CardSet {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
   id: number;

@@ -10,7 +10,7 @@ import { Invoice } from "./Invoice";
 
 @Index("uq_user_email", ["email"], { unique: true })
 @Index("uq_user_username", ["username"], { unique: true })
-@Entity("user", { schema: "yugioh_shop" })
+@Entity("user", { schema: "deckforge" })
 export class User {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
   id: number;

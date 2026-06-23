@@ -3,7 +3,7 @@ import { CardSet } from "./CardSet";
 import { Deck } from "./Deck";
 import { DeckCard } from "./DeckCard";
 
-@Entity("card", { schema: "yugioh_shop" })
+@Entity("card", { schema: "deckforge" })
 export class Card {
   @Column("int", { primary: true, name: "id", unsigned: true })
   id: number;

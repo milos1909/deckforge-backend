@@ -11,7 +11,7 @@ import { User } from "./User";
 import { InvoiceItem } from "./InvoiceItem";
 
 @Index("fk_invoice_user_id", ["userId"], {})
-@Entity("invoice", { schema: "yugioh_shop" })
+@Entity("invoice", { schema: "deckforge" })
 export class Invoice {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
   id: number;

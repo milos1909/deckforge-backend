@@ -1,15 +1,9 @@
 import { Router } from "express";
-import { defineRequest } from "../utils";
+import { defineRequest, getAccessToken } from "../utils";
 import { UserService } from "../services/user.service";
+import { AppError } from "../errors/app.error";
 
 export const UserRoute = Router()
-
-UserRoute.get('/profile', async (req: any, res) => {
-    await defineRequest(res, async () => {
-        const username = req.user.username
-        return await UserService.getUserProfile(username)
-    })
-})
 
 UserRoute.post('/signup', async (req, res) => {
     await defineRequest(res, async () => {
@@ -32,18 +26,19 @@ UserRoute.post('/login', async (req, res) => {
 
 UserRoute.post('/refresh', async (req, res) => {
     await defineRequest(res, async () => {
-        const auth = req.headers['authorization']
-        const token = auth && auth.split(' ')[1]
+        const token = getAccessToken(req)
 
-        if(token == undefined) throw new Error("REFRESH_TOKEN_MISSING")
+        if(!token) throw new AppError(401, "REFRESH_TOKEN_MISSING")
 
         return await UserService.refreshToken(token)
     })  
 })
 
-UserRoute.put('/password', async (req: any, res) => {
+UserRoute.use(UserService.requireAuth)
+
+UserRoute.get('/profile', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
-        return await UserService.updateUserPassword(req.body, username)
+        return await UserService.getUserProfile(username)
     })
 })

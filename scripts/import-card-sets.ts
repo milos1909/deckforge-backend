@@ -21,7 +21,7 @@ try {
 
     const dbSets = await setRepo.find()
     const setMap = new Map(
-        dbSets.map(set => [normalizeName(set.set_name!), set.id])
+        dbSets.map(set => [normalizeName(set.setName!), set.id])
     )
 
     const entities = []
@@ -46,7 +46,7 @@ try {
         }
     }
 
-    const BATCH_SIZE = 1
+    const BATCH_SIZE = 500
 
     for (let i = 0; i < entities.length; i += BATCH_SIZE) {
         const batch = entities.slice(i, i + BATCH_SIZE)

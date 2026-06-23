@@ -13,7 +13,7 @@ import { DeckCard } from "./DeckCard";
 
 @Index("fk_deck_user_id", ["userId"], {})
 @Index("fk_deck_cover_card_id", ["coverCardId"], {})
-@Entity("deck", { schema: "yugioh_shop" })
+@Entity("deck", { schema: "deckforge" })
 export class Deck {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
   id: number;
@@ -49,6 +49,12 @@ export class Deck {
     default: () => "'0'",
   })
   isPublic: number;
+
+  @Column("enum", { name: "type", enum: ["meta", "rogue", "casual", "anime"], default: "casual" })
+  type: "meta" | "rogue" | "casual" | "anime";
+
+  @Column("int", { name: "view_count", unsigned: true, default: () => "0" })
+  viewCount: number;
 
   @ManyToOne(() => Card, (card) => card.decks, {
     onDelete: "RESTRICT",

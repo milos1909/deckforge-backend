@@ -2,6 +2,7 @@ import { LessThanOrEqual, Like } from "typeorm"
 import { AppDataSource } from "../db"
 import { Set } from "../entities/Set"
 import { CardService } from "./card.service"
+import { AppError } from "../errors/app.error"
 
 const repo = AppDataSource.getRepository(Set)
 
@@ -30,7 +31,7 @@ export class SetService {
         })
 
         if(data == null){
-            throw new Error('NOT_FOUND')
+            throw new AppError(404, 'NOT_FOUND')
         }
 
         const rsp = await CardService.getCardsBySet(String(setName))

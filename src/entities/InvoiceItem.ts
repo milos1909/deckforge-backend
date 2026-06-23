@@ -11,7 +11,7 @@ import { Set } from "./Set";
 
 @Index("fk_invoice_item_invoice_id", ["invoiceId"], {})
 @Index("fk_invoice_item_set_id", ["setId"], {})
-@Entity("invoice_item", { schema: "yugioh_shop" })
+@Entity("invoice_item", { schema: "deckforge" })
 export class InvoiceItem {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
   id: number;

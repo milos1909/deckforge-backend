@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { defineRequest } from "../utils";
+import { defineRequest, parseId } from "../utils";
 import { InvoiceService } from "../services/invoice.service";
 
 export const InvoiceRoute = Router() 
@@ -18,13 +18,6 @@ InvoiceRoute.get('/cart', async (req: any, res) => {
     })   
 })
 
-InvoiceRoute.put('/pay', async (req: any, res) => {
-    await defineRequest(res, async () => {
-        const username = req.user.username
-        return await InvoiceService.pay(username)
-    })   
-})
-
 InvoiceRoute.put('/cart/add/:setName', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
@@ -33,10 +26,17 @@ InvoiceRoute.put('/cart/add/:setName', async (req: any, res) => {
     })   
 })
 
+InvoiceRoute.put('/pay', async (req: any, res) => {
+    await defineRequest(res, async () => {
+        const username = req.user.username
+        return await InvoiceService.pay(username)
+    })   
+})
+
 InvoiceRoute.put('/cart/:id/count/:count', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
-        const invoiceItemId = Number(req.params.id)
+        const invoiceItemId = parseId(req.params.id)
         const count = Number(req.params.count)
 
         return await InvoiceService.changeCartItemCount(invoiceItemId, username, count)
@@ -46,7 +46,7 @@ InvoiceRoute.put('/cart/:id/count/:count', async (req: any, res) => {
 InvoiceRoute.delete('/cart/:id', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
-        const invoiceItemId = Number(req.params.id)
+        const invoiceItemId = parseId(req.params.id)
 
         return await InvoiceService.removeCartItem(invoiceItemId, username)
     })   
@@ -55,7 +55,7 @@ InvoiceRoute.delete('/cart/:id', async (req: any, res) => {
 InvoiceRoute.get('/:id', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
-        const id = Number(req.params.id)
+        const id = parseId(req.params.id)
         return await InvoiceService.getInvoiceDetails(id, username)
     })
 })

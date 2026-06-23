@@ -5,6 +5,7 @@ import { InvoiceItem } from "../entities/InvoiceItem";
 import { Set } from "../entities/Set";
 import { UserService } from "./user.service";
 import { v7 as uuidv7 } from "uuid"
+import { AppError } from "../errors/app.error";
 
 const invoiceRepo = AppDataSource.getRepository(Invoice)
 const invoiceItemRepo = AppDataSource.getRepository(InvoiceItem)
@@ -96,7 +97,7 @@ export class InvoiceService {
 
     static async changeCartItemCount(invoiceItemId: number, username: string, newCount: number) {
         if (newCount < 1) {
-            throw new Error("COUNT_MUST_BE_>=1")
+            throw new AppError(400, "COUNT_MUST_BE_>=1")
         }
 
         const unpaidInvoice = await this.getUnpaidInvoice(username) 
@@ -126,7 +127,7 @@ export class InvoiceService {
         })
 
         if (invoiceItems.length == 0){
-            throw new Error ('CART_IS_EMPTY')
+            throw new AppError(400, 'CART_IS_EMPTY')
         }
 
         for (let item of invoiceItems) {
@@ -190,7 +191,7 @@ export class InvoiceService {
         })
 
         if (data == null)
-            throw new Error('NOT_FOUND')
+            throw new AppError(404, 'NOT_FOUND')
 
         return data
     }

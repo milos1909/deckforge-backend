@@ -9,7 +9,7 @@ import { CardSet } from "./CardSet";
 import { InvoiceItem } from "./InvoiceItem";
 
 @Index("uq_set_set_name", ["setName"], { unique: true })
-@Entity("set", { schema: "yugioh_shop" })
+@Entity("set", { schema: "deckforge" })
 export class Set {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
   id: number;

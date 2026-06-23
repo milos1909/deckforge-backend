@@ -1,22 +1,17 @@
-import axios from "axios";
 import { Card } from "../entities/Card";
 import { AppDataSource } from "../db";
-import { Like } from "typeorm";
 import { CardSet } from "../entities/CardSet";
-
-const client = axios.create({
-    baseURL: 'https://db.ygoprodeck.com/api/v7',
-    headers: {
-        'Accept': 'application/json',
-        'X-Name': 'DECKFORGE'
-    },
-    validateStatus: (status) => {
-        return status === 200
-    }
-})
+import { AppError } from "../errors/app.error";
 
 const cardRepo = AppDataSource.getRepository(Card)
 const cardSetRepo = AppDataSource.getRepository(CardSet)
+
+const SORT_COLUMNS = {
+  name: "card.name",
+  releaseDate: "card.tcgDate",
+  atk: "card.atk",
+  def: "card.def"
+} as const
 
 const RARITY_ORDER = [
     "Quarter Century Secret Rare",
@@ -85,7 +80,7 @@ export class CardService {
         level?: number, 
         scale?: number, 
         linkval?: number, 
-        sortBy?: "atk" | "def", 
+        sortBy?: string,
         sortDirection?: "DESC" | "ASC"
     ) {
         const query = cardRepo.createQueryBuilder("card").where(
@@ -100,9 +95,16 @@ export class CardService {
         if (level !== undefined) query.andWhere("card.level = :level", { level })
         if (scale !== undefined) query.andWhere("card.scale = :scale", { scale })
         if (linkval !== undefined) query.andWhere("card.linkval = :linkval", { linkval })
-        if (sortBy) {
-            query.orderBy(`card.${sortBy} IS NULL`, "ASC")
-            query.addOrderBy(`card.${sortBy}`, sortDirection ?? "DESC") 
+
+        const sortColumn = sortBy ? SORT_COLUMNS[sortBy as keyof typeof SORT_COLUMNS] : undefined
+
+        if (sortBy && !sortColumn) {
+            throw new AppError(400, "INVALID_SORT")
+        }
+
+        if (sortColumn) {
+            query.orderBy(`${sortColumn} IS NULL`, "ASC")
+            query.addOrderBy(sortColumn, sortDirection ?? "DESC") 
             query.addOrderBy("card.id", "ASC")
         }
         
@@ -161,7 +163,7 @@ export class CardService {
         })
     }
 
-    static async getCardDetails(id: number){
+    static async getCardById(id: number){
         const data = await cardRepo.findOne({
             where: {
                 id
@@ -169,7 +171,7 @@ export class CardService {
         })
 
         if(data == null){
-            throw new Error('NOT_FOUND')
+            throw new AppError(404, 'NOT_FOUND')
         }
 
         return data
