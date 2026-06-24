@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { defineRequest, parseId } from "../utils";
 import { CardService } from "../services/card.service";
+import { DeckService } from "../services/deck.service";
+import { SetService } from "../services/set.service";
 
 export const CardRoute = Router()
 
@@ -51,6 +53,23 @@ CardRoute.get('/:id', async (req, res) => {
     await defineRequest(res, async () => {
         const id = parseId(req.params.id)
         return await CardService.getCardById(id)
+    })
+})
+
+CardRoute.get('/:id/decks', async (req, res) => {
+    await defineRequest(res, async () => {
+        const id = parseId(req.params.id)
+        const limit = Number(req.query.limit)
+        return await DeckService.getDecksByCard(id, limit)
+    })
+})
+
+CardRoute.get('/:id/sets', async (req, res) => {
+    await defineRequest(res, async () => {
+        const id = parseId(req.params.id)
+        const limit = Number(req.query.limit)
+        const offset = Number(req.query.offset) || 0
+        return await SetService.getSetsByCard(id, limit, offset)
     })
 })
 

@@ -12,105 +12,6 @@ const repo = AppDataSource.getRepository(User)
 const JWT_SECRET = process.env.JWT_SECRET ?? ''
 
 export class UserService {
-    static async createAccount(obj: any){
-        if(await repo.existsBy({email: obj.email}) || await repo.existsBy({username: obj.username})){
-            throw Error()
-        }
-
-        const hashed = bcrypt.hashSync(obj.password, 12)
-        const code = generateVerificationCode()
-
-        MailService.send(obj.email, 'Email verification code', `
-            <h3>Hi ${obj.username}, welcome to our app</h3>
-            <p>Your verification code is: <strong>${code}</strong</p>
-        `)
-
-        await repo.save({
-            username: obj.username,
-            email: obj.email,
-            emailCode: code,
-            password: hashed,
-            createdAt: new Date()
-        })
-    }
-
-    static async verifyAccount(code: number){
-        const acc = await repo.findOneBy({
-            emailCode: code,
-            verifiedAt: IsNull(),
-            deletedAt: IsNull() 
-        })
-
-        if (acc == null) throw new AppError(404, 'NOT_FOUND')
-
-        acc.verifiedAt = new Date()
-        await repo.save(acc)
-    }
-
-    static async login(obj: any){
-        const user = await this.getUserByUsername(obj.username)
-        
-        if(!bcrypt.compareSync(obj.password, user.password)) throw new AppError(401, 'USER_NOT_FOUND')
-
-        return {
-            access: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
-            refresh: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
-            username: user.username
-        }
-    }
-
-    static async refreshToken(token: string){
-        const decoded: any = jwt.verify(token, JWT_SECRET)
-        const user = await this.getUserByUsername(decoded.username)
-
-        return {
-            access: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, {expiresIn: '7d'}),
-            refresh: token,
-            username: user.username
-        }
-    }
-
-    static requireAuth(req: any, res: Response, next: Function) {
-        const token = getAccessToken(req)
-
-        if (!token) {
-            res.status(401).json({
-                message: 'NO_TOKEN_FOUND',
-                timestamp: new Date()
-            })
-            return
-        }
-
-        try {
-            req.user = jwt.verify(token, JWT_SECRET)
-            next()
-        } catch {
-            res.status(403).json({
-                message: 'INVALID_TOKEN',
-                timestamp: new Date()
-            })
-        }
-    }
-
-    static optionalAuth(req: any, res: Response, next: Function) {
-        const token = getAccessToken(req)
-
-        if (!token) {
-            next()
-            return
-        }
-
-        try {
-            req.user = jwt.verify(token, JWT_SECRET)
-            next()
-        } catch {
-            res.status(403).json({
-                message: 'INVALID_TOKEN',
-                timestamp: new Date()
-            })
-        }
-    }
-
     static async getUserByUsername(username: string){
         const user = await repo.findOneBy({
             username,
@@ -166,5 +67,122 @@ export class UserService {
         user.invoices = user.invoices?.filter(invoice => invoice.pursId != null) ?? []
 
         return user
+    }
+
+    static async login(obj: any){
+        if (!obj.username || !obj.password) {
+            throw new AppError(400, 'MISSING_FIELDS')
+        }
+        
+        const user = await this.getUserByUsername(obj.username)
+        
+        if(!bcrypt.compareSync(obj.password, user.password)) throw new AppError(401, 'USER_NOT_FOUND')
+
+        return {
+            access: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
+            refresh: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, { expiresIn:  '7d' }),
+            username: user.username
+        }
+    }
+
+    static async createAccount(obj: any){
+        if (!obj.username || !obj.email || !obj.password) {
+            throw new AppError(400, 'MISSING_FIELDS')
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(obj.email)) {
+            throw new AppError(400, 'INVALID_EMAIL')
+        }
+
+        if (await repo.existsBy({ username: obj.username })) {
+            throw new AppError(409, 'USERNAME_ALREADY_EXISTS')
+        }
+
+        if (await repo.existsBy({ email: obj.email })) {
+            throw new AppError(409, 'EMAIL_ALREADY_EXISTS')
+        }
+
+        const hashed = bcrypt.hashSync(obj.password, 12)
+        const code = generateVerificationCode()
+
+        MailService.send(obj.email, 'Email verification code', `
+            <h3>Hi ${obj.username}, welcome to our app</h3>
+            <p>Your verification code is: <strong>${code}</strong></p>
+        `)
+
+        await repo.save({
+            username: obj.username,
+            email: obj.email,
+            emailCode: code,
+            password: hashed,
+            createdAt: new Date()
+        })
+    }
+
+    static async verifyAccount(code: number){
+        const acc = await repo.findOneBy({
+            emailCode: code,
+            verifiedAt: IsNull(),
+            deletedAt: IsNull() 
+        })
+
+        if (acc == null) throw new AppError(404, 'NOT_FOUND')
+
+        acc.verifiedAt = new Date()
+        await repo.save(acc)
+    }
+
+
+
+    static async refreshToken(token: string){
+        const decoded: any = jwt.verify(token, JWT_SECRET)
+        const user = await this.getUserByUsername(decoded.username)
+
+        return {
+            access: jwt.sign({id: user.id, username: user.username}, JWT_SECRET, {expiresIn: '7d'}),
+            refresh: token,
+            username: user.username
+        }
+    }
+
+    static requireAuth(req: any, res: Response, next: Function) {
+        const token = getAccessToken(req)
+
+        if (!token) {
+            res.status(401).json({
+                message: 'NO_TOKEN_FOUND',
+                timestamp: new Date()
+            })
+            return
+        }
+
+        try {
+            req.user = jwt.verify(token, JWT_SECRET)
+            next()
+        } catch {
+            res.status(403).json({
+                message: 'INVALID_TOKEN',
+                timestamp: new Date()
+            })
+        }
+    }
+
+    static optionalAuth(req: any, res: Response, next: Function) {
+        const token = getAccessToken(req)
+
+        if (!token) {
+            next()
+            return
+        }
+
+        try {
+            req.user = jwt.verify(token, JWT_SECRET)
+            next()
+        } catch {
+            res.status(403).json({
+                message: 'INVALID_TOKEN',
+                timestamp: new Date()
+            })
+        }
     }
 }

@@ -126,15 +126,34 @@ export class DeckService {
 
     qb.take(limit).skip(offset);
 
-    const [decks, total] = await qb.getManyAndCount();
+    const [decks, count] = await qb.getManyAndCount();
 
-    return { decks, total };
+    return { decks, count };
   }
 
-  static async getDeckById(id: number, requestingUserId?: number) {
+  static async getDecksByCard(cardId: number, limit: number) {
+    if (!Number.isInteger(limit) || limit <= 0) {
+      throw new AppError(400, 'INVALID_LIMIT')
+    }
+
+    const decks = await deckRepo
+      .createQueryBuilder('deck')
+      .distinct(true)
+      .innerJoin('deck.deckCards', 'deckCard')
+      .where('deckCard.cardId = :cardId', { cardId })
+      .andWhere('deck.isPublic = :isPublic', { isPublic: 1 })
+      .orderBy('deck.viewCount', 'DESC')
+      .addOrderBy('deck.createdAt', 'DESC')
+      .take(limit)
+      .getMany()
+
+    return { decks }
+  }
+
+  static async getDeckById(deckId: number, requestingUserId?: number) {
     const deck = await deckRepo.findOne({
       where: {
-        id
+        id: deckId
       },
       relations: {
         user: true,
@@ -183,7 +202,7 @@ export class DeckService {
     }
   }
 
-  static async create(obj: DeckInput, userId: number) {
+  static async createDeck(obj: DeckInput, userId: number) {
     return await AppDataSource.transaction(async (manager) => {
       await validateDeckCards(manager, obj.cards)
       const deck = new Deck();
@@ -209,10 +228,10 @@ export class DeckService {
     });
   }
 
-  static async update(id: number, userId: number, obj: DeckInput) {
+  static async updateDeck(deckId: number, userId: number, obj: DeckInput) {
     return await AppDataSource.transaction(async (manager) => {
       const deck = await manager.findOneBy(Deck, { 
-        id,
+        id: deckId,
         userId
       });
 
@@ -223,12 +242,12 @@ export class DeckService {
       await validateDeckCards(manager, obj.cards)
 
       await manager.delete(DeckCard, {
-        deckId: id,
+        deckId
       });
 
       const deckCards = obj.cards.map((card) => {
         const deckCard = new DeckCard()
-        deckCard.deckId = id;
+        deckCard.deckId = deckId;
         deckCard.cardId = card.id;
         deckCard.type = card.type;
 
@@ -247,9 +266,9 @@ export class DeckService {
     });
   }
 
-  static async updateMetadata(id: number, userId: number, obj: DeckMetadataInput) {
+  static async updateMetadata(deckId: number, userId: number, obj: DeckMetadataInput) {
     const deck = await deckRepo.findOneBy({ 
-        id,
+        id: deckId,
         userId
     });
 
@@ -304,5 +323,52 @@ export class DeckService {
     await deckRepo.save(deck)
 
     return deck
+  }
+
+  static async copyDeck(sourceDeckId: number, userId: number) {
+    return await AppDataSource.transaction(async manager => {
+      const sourceDeck = await manager.findOne(Deck, {
+        where: { 
+          id: sourceDeckId 
+        },
+        relations: {
+          deckCards: true
+        }
+      })
+
+      if (!sourceDeck) {
+        throw new AppError(404, 'NOT_FOUND')
+      }
+
+      const isOwner = sourceDeck.userId === userId
+
+      if (!sourceDeck.isPublic && !isOwner) {
+        throw new AppError(404, 'NOT_FOUND')
+      }
+
+      const copiedDeck = new Deck()
+      copiedDeck.userId = userId
+      copiedDeck.name = `${sourceDeck.name} Copy`
+      copiedDeck.description = sourceDeck.description
+      copiedDeck.coverCardId = sourceDeck.coverCardId
+      copiedDeck.type = sourceDeck.type
+      copiedDeck.isPublic = 0
+
+      const savedDeck = await manager.save(copiedDeck)
+
+      const copiedCards = sourceDeck.deckCards.map(sourceCard => {
+        const deckCard = new DeckCard()
+        deckCard.deckId = savedDeck.id
+        deckCard.cardId = sourceCard.cardId
+        deckCard.type = sourceCard.type
+        return deckCard
+      })
+
+      if (copiedCards.length > 0) {
+        await manager.save(DeckCard, copiedCards)
+      }
+
+      return savedDeck
+    })
   }
 }

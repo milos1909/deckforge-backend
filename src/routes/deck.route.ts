@@ -28,7 +28,7 @@ DeckRoute.use(UserService.requireAuth)
 DeckRoute.post('/create', async (req: any, res) => {
     await defineRequest(res, async () => {
         const userId = req.user.id
-        return await DeckService.create(req.body, userId)
+        return await DeckService.createDeck(req.body, userId)
     })
 })
 
@@ -36,7 +36,7 @@ DeckRoute.put('/update/:id', async (req: any, res) => {
     await defineRequest(res, async () => {
         const id = parseId(req.params.id)
         const userId = req.user.id
-        return await DeckService.update(id, userId, req.body)
+        return await DeckService.updateDeck(id, userId, req.body)
     })
 })
 
@@ -46,6 +46,14 @@ DeckRoute.patch('/update-metadata/:id', async (req: any, res) => {
     const userId = req.user.id
     return await DeckService.updateMetadata(id, userId, req.body)
   })
+})
+
+DeckRoute.post('/:id/copy', async (req: any, res) => {
+    await defineRequest(res, async () => {
+        const id = parseId(req.params.id)
+        const userId = req.user.id 
+        return await DeckService.copyDeck(id, userId)
+    })
 })
 
 

@@ -110,9 +110,9 @@ export class CardService {
         
         query.take(limit).skip(offset)
 
-        const [cards, total] = await query.getManyAndCount()
+        const [cards, count] = await query.getManyAndCount()
 
-        return { cards, total }
+        return { cards, count }
     }
 
     static async getCardsBySet(setName: string) {
@@ -163,10 +163,10 @@ export class CardService {
         })
     }
 
-    static async getCardById(id: number){
+    static async getCardById(cardId: number){
         const data = await cardRepo.findOne({
             where: {
-                id
+                id: cardId
             }
         })
 

@@ -3,12 +3,14 @@ import { AppDataSource } from "../db"
 import { Set } from "../entities/Set"
 import { CardService } from "./card.service"
 import { AppError } from "../errors/app.error"
+import { CardSet } from "../entities/CardSet"
 
-const repo = AppDataSource.getRepository(Set)
+const setRepo = AppDataSource.getRepository(Set)
+const cardSetRepo = AppDataSource.getRepository(CardSet)
 
 export class SetService {
     static async getSets(name: string, sortDirection: "DESC" | "ASC", maxPrice: number, limit: number, offset: number){
-        const [sets, total] = await repo.findAndCount({
+        const [sets, count] = await setRepo.findAndCount({
             where: {
                 ...({ setName: Like(`%${name}%`) }),
                 ...({ price: LessThanOrEqual(maxPrice.toString())}),
@@ -20,11 +22,39 @@ export class SetService {
             skip: offset
         })
 
-        return {sets, total}
+        return {sets, count}
+    }
+    
+    static async getSetsByCard(cardId: number, limit: number, offset: number) {
+        if (!Number.isInteger(limit) || limit <= 0) {
+            throw new AppError(400, 'INVALID_LIMIT')
+        }
+
+        if (!Number.isInteger(offset) || offset < 0) {
+            throw new AppError(400, 'INVALID_OFFSET')
+        }
+
+        const [sets, count] = await setRepo
+            .createQueryBuilder('set')
+            .distinct(true)
+            .innerJoin('set.cardSets', 'cardSet')
+            .where('cardSet.cardId = :cardId', { cardId })
+            .select([
+                'set.id',
+                'set.setName',
+                'set.setCode',
+                'set.tcgDate'
+            ])
+            .orderBy('set.tcgDate', 'DESC')
+            .take(limit)
+            .skip(offset)
+            .getManyAndCount()
+
+        return { sets, count }
     }
 
     static async getSetByName(setName: string){
-        const data = await repo.findOne({
+        const data = await setRepo.findOne({
             where: {
                 setName
             }
