@@ -8,9 +8,11 @@ import {
 } from "typeorm";
 import { Invoice } from "./Invoice";
 import { Set } from "./Set";
+import { Card } from "./Card";
 
 @Index("fk_invoice_item_invoice_id", ["invoiceId"], {})
 @Index("fk_invoice_item_set_id", ["setId"], {})
+@Index("fk_invoice_item_card_id", ["cardId"], {})
 @Entity("invoice_item", { schema: "deckforge" })
 export class InvoiceItem {
   @PrimaryGeneratedColumn({ type: "int", name: "id", unsigned: true })
@@ -19,11 +21,17 @@ export class InvoiceItem {
   @Column("int", { name: "invoice_id", unsigned: true })
   invoiceId: number;
 
-  @Column("int", { name: "set_id", unsigned: true })
-  setId: number;
+  @Column("enum", { name: "item_type", enum: ["set", "card"] })
+  itemType: "set" | "card";
 
-  @Column("int", { name: "price_per_item", unsigned: true })
-  pricePerItem: number;
+  @Column("int", { name: "set_id", unsigned: true, nullable: true })
+  setId: number | null;
+
+  @Column("int", { name: "card_id", unsigned: true, nullable: true })
+  cardId: number | null;
+
+  @Column("decimal", { name: "price_per_item", precision: 10, scale: 2 })
+  pricePerItem: string;
 
   @Column("int", { name: "count", unsigned: true })
   count: number;
@@ -52,5 +60,12 @@ export class InvoiceItem {
     onUpdate: "CASCADE",
   })
   @JoinColumn([{ name: "set_id", referencedColumnName: "id" }])
-  set: Relation<Set>;
+  set: Relation<Set> | null;
+
+  @ManyToOne(() => Card, (card) => card.invoiceItems, {
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+  })
+  @JoinColumn([{ name: "card_id", referencedColumnName: "id" }])
+  card: Relation<Card> | null;
 }

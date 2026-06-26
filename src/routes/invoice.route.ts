@@ -18,18 +18,19 @@ InvoiceRoute.get('/cart', async (req: any, res) => {
     })   
 })
 
-InvoiceRoute.put('/cart/add/:setName', async (req: any, res) => {
+InvoiceRoute.put('/cart/set/:setName', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
         const setName = req.params.setName
-        return await InvoiceService.addItemToCart(setName, username)
+        return await InvoiceService.addSetToCart(setName, username)
     })   
 })
 
-InvoiceRoute.put('/pay', async (req: any, res) => {
+InvoiceRoute.put('/cart/card/:cardId', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username
-        return await InvoiceService.pay(username)
+        const cardId = parseId(req.params.cardId)
+        return await InvoiceService.addCardToCart(cardId, username)
     })   
 })
 
@@ -40,6 +41,13 @@ InvoiceRoute.put('/cart/:id/count/:count', async (req: any, res) => {
         const count = Number(req.params.count)
 
         return await InvoiceService.changeCartItemCount(invoiceItemId, username, count)
+    })   
+})
+
+InvoiceRoute.put('/pay', async (req: any, res) => {
+    await defineRequest(res, async () => {
+        const username = req.user.username
+        return await InvoiceService.pay(username)
     })   
 })
 

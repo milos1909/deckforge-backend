@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany } from "typeorm";
 import { CardSet } from "./CardSet";
 import { Deck } from "./Deck";
 import { DeckCard } from "./DeckCard";
+import { InvoiceItem } from "./InvoiceItem";
 
 @Entity("card", { schema: "deckforge" })
 export class Card {
@@ -50,7 +51,7 @@ export class Card {
     precision: 10,
     scale: 2,
   })
-  cardmarketPrice: string | null;
+  cardmarketPrice: string;
 
   @OneToMany(() => CardSet, (cardSet) => cardSet.card)
   cardSets: CardSet[];
@@ -60,4 +61,7 @@ export class Card {
 
   @OneToMany(() => DeckCard, (deckCard) => deckCard.card)
   deckCards: DeckCard[];
+
+  @OneToMany(() => InvoiceItem, (invoiceItem) => invoiceItem.card)
+  invoiceItems: InvoiceItem[];
 }

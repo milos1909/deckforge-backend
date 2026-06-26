@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "yugioh-shop-backend",
+      "name": "deckforge-backend",
       "dependencies": {
         "axios": "^1.16.1",
         "bcrypt": "^6.0.0",
