@@ -34,6 +34,14 @@ InvoiceRoute.put('/cart/card/:cardId', async (req: any, res) => {
     })   
 })
 
+InvoiceRoute.put('/cart/deck/:deckId', async (req: any, res) => {
+    await defineRequest(res, async () => {
+        const username = req.user.username
+        const deckId = parseId(req.params.deckId)
+        return await InvoiceService.addDeckToCart(deckId, username)
+    })   
+})
+
 InvoiceRoute.put('/cart/:id/count/:count', async (req: any, res) => {
     await defineRequest(res, async () => {
         const username = req.user.username

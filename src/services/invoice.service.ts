@@ -7,6 +7,7 @@ import { UserService } from "./user.service";
 import { v7 as uuidv7 } from "uuid"
 import { AppError } from "../errors/app.error";
 import { Card } from "../entities/Card";
+import { Deck } from "../entities/Deck";
 
 const invoiceRepo = AppDataSource.getRepository(Invoice)
 const invoiceItemRepo = AppDataSource.getRepository(InvoiceItem)
@@ -186,6 +187,70 @@ export class InvoiceService {
         }
 
         await invoiceItemRepo.save(existing)
+    }
+
+    static async addDeckToCart(deckId: number, username: string) {
+        await AppDataSource.transaction(async manager => {
+            const user = await UserService.getUserByUsername(username)
+
+            const deck = await manager.findOne(Deck, {
+                where: { id: deckId },
+                relations: {
+                    deckCards: {
+                        card: true
+                    }
+                }
+            })
+
+            if (!deck) throw new AppError(404, 'DECK_NOT_FOUND')
+
+            const unpaidInvoice = await this.getUnpaidInvoice(username)
+
+            const cardCounts = new Map<number, { count: number, price: string }>()
+
+            for (const deckCard of deck.deckCards) {
+                const card = deckCard.card
+
+                if (Number(card.cardmarketPrice) <= 0) {
+                    throw new AppError(400, 'CARD_PRICE_MISSING')
+                }
+
+                const existing = cardCounts.get(card.id)
+
+                cardCounts.set(card.id, {
+                    count: (existing?.count ?? 0) + 1,
+                    price: card.cardmarketPrice
+                })
+            }
+
+            for (const [cardId, data] of cardCounts) {
+                const existingCartItem = await manager.findOne(InvoiceItem, {
+                    where: {
+                        invoiceId: unpaidInvoice.id,
+                        itemType: 'card',
+                        cardId,
+                        deletedAt: IsNull()
+                    }
+                })
+
+                if (existingCartItem) {
+                    existingCartItem.count += data.count
+                    existingCartItem.updatedAt = new Date()
+                    await manager.save(InvoiceItem, existingCartItem)
+                    continue
+                }
+
+                await manager.save(InvoiceItem, {
+                    invoiceId: unpaidInvoice.id,
+                    itemType: 'card',
+                    setId: null,
+                    cardId,
+                    pricePerItem: data.price,
+                    count: data.count,
+                    createdAt: new Date()
+                })
+            }
+        })
     }
 
     static async changeCartItemCount(invoiceItemId: number, username: string, newCount: number) {
