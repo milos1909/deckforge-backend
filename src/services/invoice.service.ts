@@ -211,9 +211,9 @@ export class InvoiceService {
             for (const deckCard of deck.deckCards) {
                 const card = deckCard.card
 
-                if (Number(card.cardmarketPrice) <= 0) {
-                    throw new AppError(400, 'CARD_PRICE_MISSING')
-                }
+                    if (Number(card.cardmarketPrice) <= 0) {
+                        continue
+                    }
 
                 const existing = cardCounts.get(card.id)
 
