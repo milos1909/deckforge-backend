@@ -56,6 +56,15 @@ DeckRoute.post('/:id/copy', async (req: any, res) => {
     })
 })
 
+DeckRoute.delete('/:id/delete', async (req: any, res) => {
+  await defineRequest(res, async () => {
+    const id = parseId(req.params.id)
+    const userId = req.user.id
+
+    return await DeckService.deleteDeck(id, userId)
+  })
+})
+
 
 
 

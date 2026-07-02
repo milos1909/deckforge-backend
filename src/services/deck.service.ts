@@ -371,4 +371,26 @@ export class DeckService {
       return savedDeck
     })
   }
+
+  static async deleteDeck(deckId: number, userId: number) {
+    await AppDataSource.transaction(async (manager) => {
+      const deck = await manager.findOneBy(Deck, {
+        id: deckId,
+        userId
+      })
+
+      if (deck == null) {
+        throw new AppError(404, 'NOT_FOUND')
+      }
+
+      await manager.delete(DeckCard, {
+        deckId
+      })
+
+      await manager.delete(Deck, {
+        id: deckId,
+        userId
+      })
+    })
+  }
 }
